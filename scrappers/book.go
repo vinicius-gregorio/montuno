@@ -18,7 +18,8 @@ type Book struct {
 func StartScrapingBooks() {
 	const url = "https://books.toscrape.com/"
 	const allowedDomains = "books.toscrape.com"
-	fileCSV, err := os.Create("output.csv")
+
+	fileCSV, err := os.Create("outputs\\output-books.csv")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -36,11 +37,9 @@ func StartScrapingBooks() {
 		colly.AllowedDomains(allowedDomains),
 	)
 
-	c.OnHTML(".product_pod", func(e *colly.HTMLElement) {
-		book := Book{}
-		book.Title = e.ChildAttr(".image_container img", "alt")
-		book.Price = e.ChildText(".price_color")
-		fmt.Println(book.Title, book.Price)
+	c.OnHTML(".next > a", func(e *colly.HTMLElement) {
+		nextPage := e.Request.AbsoluteURL(e.Attr("href"))
+		c.Visit(nextPage)
 	})
 
 	c.OnHTML(".product_pod", func(e *colly.HTMLElement) {
@@ -50,7 +49,7 @@ func StartScrapingBooks() {
 		row := []string{book.Title, book.Price}
 		writerCSV.Write(row)
 		books = append(books, book)
-
+		fmt.Println("Scrapped book")
 	})
 	c.OnResponse(func(r *colly.Response) {
 		fmt.Println(r.StatusCode)
@@ -67,5 +66,5 @@ func StartScrapingBooks() {
 
 func writeBooksToJson(books []Book) {
 	file, _ := json.MarshalIndent(books, "", "")
-	os.WriteFile("output.json", file, 0644)
+	os.WriteFile("outputs\\output-books.json", file, 0644)
 }
