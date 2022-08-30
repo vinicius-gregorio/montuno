@@ -17,6 +17,8 @@ type Book struct {
 }
 
 func StartScrapingBooks() {
+	const url = "https://books.toscrape.com/"
+	const allowedDomains = "books.toscrape.com"
 	fileCSV, err := os.Create("output.csv")
 	if err != nil {
 		log.Fatal(err)
@@ -32,7 +34,7 @@ func StartScrapingBooks() {
 	writerCSV.Write(headers)
 
 	c := colly.NewCollector(
-		colly.AllowedDomains("books.toscrape.com"),
+		colly.AllowedDomains(allowedDomains),
 	)
 
 	c.OnHTML(".product_pod", func(e *colly.HTMLElement) {
@@ -59,7 +61,7 @@ func StartScrapingBooks() {
 		fmt.Println("Visiting", r.URL)
 	})
 
-	c.Visit("https://books.toscrape.com/")
+	c.Visit(url)
 
 	writeBooksToJson(books)
 }
