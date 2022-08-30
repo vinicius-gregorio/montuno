@@ -49,7 +49,6 @@ func StartScrapingBooks() {
 		row := []string{book.Title, book.Price}
 		writerCSV.Write(row)
 		books = append(books, book)
-		fmt.Println("Scrapped book")
 	})
 	c.OnResponse(func(r *colly.Response) {
 		fmt.Println(r.StatusCode)
