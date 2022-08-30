@@ -4,7 +4,6 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 
@@ -68,5 +67,5 @@ func StartScrapingBooks() {
 
 func writeBooksToJson(books []Book) {
 	file, _ := json.MarshalIndent(books, "", "")
-	ioutil.WriteFile("output.json", file, 0644)
+	os.WriteFile("output.json", file, 0644)
 }
