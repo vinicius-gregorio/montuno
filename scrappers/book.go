@@ -2,7 +2,9 @@ package scrapper
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 
@@ -15,16 +17,19 @@ type Book struct {
 }
 
 func StartScrapingBooks() {
-	fileCSV, err := os.Create("export.csv")
+	fileCSV, err := os.Create("output.csv")
 	if err != nil {
 		log.Fatal(err)
 	}
+	books := []Book{}
+
 	defer fileCSV.Close()
-	writer := csv.NewWriter(fileCSV)
-	defer writer.Flush()
+
+	writerCSV := csv.NewWriter(fileCSV)
+	defer writerCSV.Flush()
 
 	headers := []string{"Title", "Price"}
-	writer.Write(headers)
+	writerCSV.Write(headers)
 
 	c := colly.NewCollector(
 		colly.AllowedDomains("books.toscrape.com"),
@@ -42,7 +47,9 @@ func StartScrapingBooks() {
 		book.Title = e.ChildAttr(".image_container img", "alt")
 		book.Price = e.ChildText(".price_color")
 		row := []string{book.Title, book.Price}
-		writer.Write(row)
+		writerCSV.Write(row)
+		books = append(books, book)
+
 	})
 	c.OnResponse(func(r *colly.Response) {
 		fmt.Println(r.StatusCode)
@@ -54,4 +61,10 @@ func StartScrapingBooks() {
 
 	c.Visit("https://books.toscrape.com/")
 
+	writeBooksToJson(books)
+}
+
+func writeBooksToJson(books []Book) {
+	file, _ := json.MarshalIndent(books, "", "")
+	ioutil.WriteFile("output.json", file, 0644)
 }
